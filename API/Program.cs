@@ -19,6 +19,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddIdentityServices(builder.Configuration);
+builder.Services.AddCors();
 
 
 
@@ -34,9 +35,10 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 //app.UseAuthorization();
-app.UseCors(builder => builder.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200"));
 
 app.UseCors(builder => builder.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200"));
+
+
 
 app.UseAuthentication();
 app.UseAuthorization();
