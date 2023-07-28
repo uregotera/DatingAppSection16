@@ -8,7 +8,7 @@ namespace API.DTOs
         [Required]
         public string  Username { get; set; }
 
-        [Required] public string KnownAS { get; set; }
+        [Required] public string KnownAs { get; set; }
         [Required] public string Gender { get; set; }
 
         [Required] public DateOnly? DateOfBirth { get; set; } // Optional to make reuired work!

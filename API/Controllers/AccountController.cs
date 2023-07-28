@@ -6,6 +6,7 @@ using API.DTOs;
 using API.Entities;
 using API.Interfaces;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -14,14 +15,15 @@ namespace API.Controllers
 {
     public class AccountController : BaseApiController
     {
-        private readonly DataContext _context;
         private readonly ITokenService _tokenService;
         private readonly IMapper _mapper;
-        public AccountController(DataContext context, ITokenService tokenService, IMapper mapper)
+        private readonly UserManager<AppUser> _userManager;
+        public AccountController(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper)
         {
+            _userManager = userManager;
             _mapper = mapper;
             _tokenService = tokenService;
-            _context = context;
+            
             
         }
 
@@ -35,13 +37,15 @@ namespace API.Controllers
              
             user.UserName = registerDto.Username.ToLower();
                 
-             _context.Users.Add(user);
-             await _context.SaveChangesAsync();
+             var result = await _userManager.CreateAsync(user, registerDto.Password);
+
+             if (!result.Succeeded) return BadRequest(result.Errors);
+
              return new UserDto
              {
                 Username = user.UserName,
                 Token = _tokenService.CreateToken(user),
-                KnownAS = user.KnownAS,
+                KnownAs = user.KnownAs,
                 Gender = user.Gender
              };
         }
@@ -49,11 +53,15 @@ namespace API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
         {
-               var user = await _context.Users
+               var user = await _userManager.Users
                .Include(p => p.Photos)
                .SingleOrDefaultAsync(x =>x.UserName == loginDto.Username);
 
                if(user == null) return Unauthorized("invalid username");
+
+               var result = await _userManager.CheckPasswordAsync(user, loginDto.Password);
+
+               if (!result) return Unauthorized("Invalid password");
 
                
                 return new UserDto
@@ -61,14 +69,14 @@ namespace API.Controllers
                 Username = user.UserName,
                 Token = _tokenService.CreateToken(user),
                 PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
-                KnownAS = user.KnownAS,
+                KnownAs = user.KnownAs,
                 Gender = user.Gender
              };
         }
 
         private async Task<bool> UserExists(string username)
             {
-                return await _context.Users.AnyAsync(x => x.UserName == username.ToLower());
+                return await _userManager.Users.AnyAsync(x => x.UserName == username.ToLower());
             }
         
     }

@@ -8,7 +8,7 @@ namespace API.Entities
     {
         public DateOnly DateOfBirth { get; set; }
 
-        public string KnownAS { get; set; }
+        public string KnownAs { get; set; }
 
         public DateTime Created { get; set; } = DateTime.UtcNow;
 
