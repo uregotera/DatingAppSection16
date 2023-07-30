@@ -31,7 +31,7 @@ namespace API.Controllers
                       
         }
 
-        
+       
         [HttpGet]
         public async Task<ActionResult<PagedList<MemberDto>>> GetUsers([FromQuery]UserParams userParams)
          {
